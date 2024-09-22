@@ -66,7 +66,7 @@ target_link_libraries(${PROJECT_NAME}-test getopt-plus)
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 
-set(SRC_IDE .clang-format)
+set(SRC_IDE .clang-format README.md)
 
 add_custom_target(target_for_ide SOURCES ${SRC_IDE})
 
