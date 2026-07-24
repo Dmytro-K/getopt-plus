@@ -5,6 +5,15 @@
 
 #include "getopt-plus.h"
 
+/**
+ * Append an argument string to a linked list.
+ *
+ * The string itself is not copied and remains owned by the caller.
+ *
+ * @param lst Existing list head, or NULL to create a list.
+ * @param arg Argument string to append.
+ * @return Head of the resulting list.
+ */
 static arg_list_t *arg_list_put(arg_list_t *lst, const char *arg)
 {
     arg_list_t *tmp = lst;
@@ -26,6 +35,13 @@ static arg_list_t *arg_list_put(arg_list_t *lst, const char *arg)
     return lst;
 }
 
+/**
+ * Release every node in an argument list.
+ *
+ * Stored argument strings are not released.
+ *
+ * @param lst List head, or NULL for an empty list.
+ */
 static void arg_list_free(arg_list_t *lst)
 {
     for (arg_list_t *tmp = lst; NULL != lst; lst = tmp)

@@ -6,6 +6,13 @@
 
 #include "getopt-plus/getopt-plus.h"
 
+/**
+ * Exercise getopt-plus parsing and print the resulting option state.
+ *
+ * @param argc Number of command-line arguments.
+ * @param argv Command-line argument vector.
+ * @return Zero on success, or the negative parser result on failure.
+ */
 int main(int argc, char **argv)
 {
 
