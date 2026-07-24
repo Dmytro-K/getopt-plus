@@ -43,6 +43,52 @@ void args_cleanup(arg_t args[])
     }
 }
 
+void args_print_usage(const char *prog, const arg_t args[], const char *posargs_names[])
+{
+    printf("Usage: %s [OPTIONS]", prog);
+    if (NULL != posargs_names)
+    {
+        for (size_t i = 0; NULL != posargs_names[i]; ++i)
+        {
+            printf(" %s", posargs_names[i]);
+        }
+    }
+    printf("\n");
+
+    printf("Options:\n");
+    for (size_t i = 0; ((NULL != args[i].c) || (NULL != args[i].opt.name)); ++i)
+    {
+        printf("  ");
+
+        if (NULL != args[i].c)
+        {
+            printf("-%c", args[i].c[0]);
+        }
+        else
+        {
+            printf("  ");
+        }
+
+        if (NULL != args[i].opt.name)
+        {
+            printf("%c --%-10s", ((NULL == args[i].c) ? ' ' : ','), args[i].opt.name);
+        }
+        else
+        {
+            printf("    %-10s", "");
+        }
+
+        if (NULL != args[i].help)
+        {
+            printf("\t%s", args[i].help);
+        }
+
+        printf("\n");
+    }
+
+    printf("  -h, --%-10s\tPrint this help\n", "help");
+}
+
 int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
                const char *posargs[])
 {
@@ -184,44 +230,7 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
 
     if ((0 != help) || (false != err))
     {
-        printf("Usage: %s [OPTIONS]", argv[0]);
-        if ((NULL != posargs_names) && (NULL != posargs))
-        {
-            for (size_t i = 0; NULL != posargs_names[i]; ++i)
-            {
-                printf(" %s", posargs_names[i]);
-            }
-        }
-        printf("\n");
-        printf("Options:\n");
-        for (size_t i = 0; i < count; ++i)
-        {
-            printf("  ");
-
-            if (args[i].c != NULL)
-            {
-                printf("-%c", args[i].c[0]);
-            }
-            else
-            {
-                printf("  ");
-            }
-
-            if (NULL != args[i].opt.name)
-            {
-                printf("%c --%-10s", ((NULL == args[i].c) ? ' ' : ','), args[i].opt.name);
-            }
-            else
-            {
-                printf("    %-10s", "");
-            }
-            if (NULL != args[i].help)
-            {
-                printf("\t%s", args[i].help);
-            }
-            printf("\n");
-        }
-        printf("  -h, --%-10s\tPrint this help\n", "help");
+        args_print_usage(argv[0], args, posargs_names);
         return -1;
     }
 

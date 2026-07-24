@@ -25,6 +25,8 @@ typedef struct
 int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
                const char *posargs[]);
 
+void args_print_usage(const char *prog, const arg_t args[], const char *posargs_names[]);
+
 void args_dbg(const arg_t args[]);
 
 void args_cleanup(arg_t args[]);
