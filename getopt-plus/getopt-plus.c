@@ -90,7 +90,7 @@ void args_print_usage(const char *prog, const arg_t args[], const char *posargs_
 }
 
 int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
-               const char *posargs[])
+               const char *posargs[], int posargs_min)
 {
     size_t short_count = 0;
     size_t short_size = 0;
@@ -225,6 +225,11 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
                 posargs[i] = argv[optind + i];
                 ++posargs_count;
             }
+        }
+
+        if (posargs_count < posargs_min)
+        {
+            err = true;
         }
     }
 

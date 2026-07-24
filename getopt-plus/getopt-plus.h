@@ -3,6 +3,7 @@
 #ifndef GETOPT_PLUS_H
 #define GETOPT_PLUS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <getopt.h>
@@ -23,7 +24,7 @@ typedef struct
 } arg_t;
 
 int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
-               const char *posargs[]);
+               const char *posargs[], int posargs_min);
 
 void args_print_usage(const char *prog, const arg_t args[], const char *posargs_names[]);
 
