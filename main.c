@@ -21,14 +21,15 @@ int main(int argc, char **argv)
     arg_t options[] = {
         /* These options set a flag. */
         {{"longarg", optional_argument, &long_arg, 1}, "Some long argument", 0, NULL, NULL},
-        {{}, "ARG 1", 0, "a::", NULL},
+        {{0}, "ARG 1", 0, "a::", NULL},
         {{"bar", optional_argument, NULL, 1}, "ARG 2", 0, "b::", NULL},
         {{0, 0, 0, 0}, NULL, 0, 0, NULL},
     };
 
     const char *posargs[2] = {0};
 
-    int ret = args_parse(argc, argv, options, (const char *[]){"INPUT", "OUTPUT", NULL}, posargs);
+    int ret =
+        args_parse(argc, argv, options, (const char *[]){"INPUT", "OUTPUT", NULL}, posargs, 0);
     if (ret < 0)
     {
         args_cleanup(options);

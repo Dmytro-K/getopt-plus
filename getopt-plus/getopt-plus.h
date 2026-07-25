@@ -49,8 +49,8 @@ typedef struct
  * @param posargs_names Sentinel-terminated positional argument names, or NULL.
  * @param posargs Destination array for positional argument strings, or NULL.
  * @param posargs_min Minimum number of required positional arguments.
- * @return Number of positional arguments on success, or a negative value when
- *         help was requested or parsing failed.
+ * @return Number of positional arguments on success; -1 when help was requested
+ *         or parsing failed (usage was printed); -2 on memory allocation failure.
  */
 int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
                const char *posargs[], int posargs_min);

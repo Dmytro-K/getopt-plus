@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <getopt.h>
+
 #include "getopt-plus.h"
 
 /**
@@ -16,21 +18,27 @@
  */
 static arg_list_t *arg_list_put(arg_list_t *lst, const char *arg)
 {
-    arg_list_t *tmp = lst;
-    if (NULL != tmp)
+    arg_list_t *node = malloc(sizeof(arg_list_t));
+    if (NULL == node)
     {
-        for (; NULL != tmp->next; tmp = tmp->next)
-            ;
-        tmp->next = malloc(sizeof(arg_list_t));
-        tmp = tmp->next;
-    }
-    else
-    {
-        tmp = lst = malloc(sizeof(arg_list_t));
+        /* Out of memory: drop this argument rather than crash. */
+        return lst;
     }
 
-    tmp->head = arg;
-    tmp->next = NULL;
+    node->head = arg;
+    node->next = NULL;
+
+    if (NULL == lst)
+    {
+        return node;
+    }
+
+    arg_list_t *tail = lst;
+    for (; NULL != tail->next; tail = tail->next)
+    {
+        ;
+    }
+    tail->next = node;
 
     return lst;
 }
@@ -61,7 +69,7 @@ void args_cleanup(arg_t args[])
 
 void args_print_usage(const char *prog, const arg_t args[], const char *posargs_names[])
 {
-    printf("Usage: %s [OPTIONS]", prog);
+    printf("Usage: %s [OPTIONS]", (NULL != prog) ? prog : "program");
     if (NULL != posargs_names)
     {
         for (size_t i = 0; NULL != posargs_names[i]; ++i)
@@ -132,6 +140,10 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
     }
 
     struct option *long_options = malloc(sizeof(struct option) * (long_count + 2));
+    if (NULL == long_options)
+    {
+        return -2;
+    }
     for (size_t i = 0, j = 0; i < long_count; ++i, ++j)
     {
         while (NULL == args[j].opt.name)
@@ -150,18 +162,25 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
     memset(&long_options[long_count + 1], 0, sizeof(long_options[long_count + 1]));
 
     char *short_options = malloc(short_size + 2);
-    short_options[0] = '\0';
+    if (NULL == short_options)
+    {
+        free(long_options);
+        return -2;
+    }
+    size_t short_pos = 0;
     for (size_t i = 0, j = 0; i < short_count; ++i, ++j)
     {
         while (NULL == args[j].c)
         {
             ++j;
         }
-        strcat(short_options, args[j].c);
+        const size_t len = strlen(args[j].c);
+        memcpy(short_options + short_pos, args[j].c, len);
+        short_pos += len;
     }
 
-    short_options[short_size] = 'h';
-    short_options[short_size + 1] = '\0';
+    short_options[short_pos] = 'h';
+    short_options[short_pos + 1] = '\0';
 
     while (1)
     {
@@ -183,16 +202,25 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
             err = true;
             break;
         }
+        else if (0 == c)
+        {
+            /*
+             * A flag-style long option (opt.flag != NULL): getopt_long
+             * stored opt.val into *flag and returned 0. It is handled by
+             * the flag-restore loop below; there is nothing to match here.
+             */
+        }
         else
         {
             if (c < (1 << 24))
             {
                 for (size_t i = 0; i < count; ++i)
                 {
-                    if ((NULL != args[i].c) && (c == args[i].c[0]))
+                    /* c is an unsigned-char value; cast to match bytes >= 0x80. */
+                    if ((NULL != args[i].c) && (c == (unsigned char)args[i].c[0]))
                     {
                         ++args[i].count;
-                        if (optarg != NULL)
+                        if (NULL != optarg)
                         {
                             args[i].arg = arg_list_put(args[i].arg, optarg);
                         }
@@ -242,11 +270,12 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
                 ++posargs_count;
             }
         }
+    }
 
-        if (posargs_count < posargs_min)
-        {
-            err = true;
-        }
+    /* Enforce the minimum even when no posargs buffer was supplied. */
+    if (posargs_count < posargs_min)
+    {
+        err = true;
     }
 
     if ((0 != help) || (false != err))
@@ -255,14 +284,7 @@ int args_parse(int argc, char **argv, arg_t args[], const char *posargs_names[],
         return -1;
     }
 
-    if (false == err)
-    {
-        return posargs_count;
-    }
-    else
-    {
-        return -2;
-    }
+    return posargs_count;
 }
 
 void args_dbg(const arg_t args[])
